@@ -1,6 +1,6 @@
 import logging
 from logging.handlers import RotatingFileHandler
-
+import os 
 import redis
 from flask import Flask
 from flask_session import Session
@@ -51,5 +51,11 @@ def create_app(config_name='product'):
     # 注册蓝图
     from . import api_1_0  # 延迟加载，解决循环导包
     app.register_blueprint(api_1_0.api, url_prefix='/api/v1.0')
+
+    # 日志文件夹
+    try:
+        os.makedirs('logs')
+    except:
+        pass
 
     return app

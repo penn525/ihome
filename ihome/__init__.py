@@ -1,6 +1,7 @@
 import logging
+import os
 from logging.handlers import RotatingFileHandler
-import os 
+
 import redis
 from flask import Flask
 from flask_session import Session
@@ -49,7 +50,7 @@ def create_app(config_name='product'):
         port=app.config.get('REDIS_PORT')
     )
 
-    # 注册转换器
+    # 将自定义转换器类,添加到默认的转换列表中
     app.url_map.converters['re'] = ReConverter
 
     # 注册蓝图

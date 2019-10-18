@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 
 from config import config_map
+from ihome.utils.common import ReConverter
 
 db = SQLAlchemy()
 redis_store = None
@@ -48,9 +49,15 @@ def create_app(config_name='product'):
         port=app.config.get('REDIS_PORT')
     )
 
+    # 注册转换器
+    app.url_map.converters['re'] = ReConverter
+
     # 注册蓝图
     from . import api_1_0  # 延迟加载，解决循环导包
     app.register_blueprint(api_1_0.api, url_prefix='/api/v1.0')
+
+    from ihome.web_html import html
+    app.register_blueprint(html)
 
     # 日志文件夹
     try:

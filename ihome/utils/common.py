@@ -1,0 +1,8 @@
+from werkzeug.routing import BaseConverter
+
+
+class ReConverter(BaseConverter):
+    def __init__(self, url_map, regex):
+        super().__init__(url_map)
+        # 保存正则表达式
+        self.regex = regex

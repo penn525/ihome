@@ -26,6 +26,9 @@ function generateImageCode() {
     $('.image-code img').attr('src', '/api/v1.0/image_code/' + imageCodeId)
 }
 
+/**
+ * 获取短信验证码方法
+ */
 function sendSMSCode() {
     $(".phonecode-a").removeAttr("onclick");
     var mobile = $("#mobile").val();
@@ -42,10 +45,9 @@ function sendSMSCode() {
         $(".phonecode-a").attr("onclick", "sendSMSCode();");
         return;
     }
-    $.get("/api/smscode", {
-            mobile: mobile,
-            code: imageCode,
-            codeId: imageCodeId
+    $.get("/api/v1.0/sms_code/" + mobile, {
+            image_code: imageCode,
+            image_code_id: imageCodeId
         },
         function (data) {
             if (0 != data.errno) {

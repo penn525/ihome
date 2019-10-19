@@ -77,6 +77,15 @@ def get_sms_code(mobile_num):
     if real_image_code.lower() == image_code.lower():
         return jsonify(error=RET.DATAERR, errmsg='图片验证失败')
 
+    # 验证手机是否在一分钟内已发送验证码，限制一分钟内只能发送一次
+    try:
+        send_flag = redis_store.get(f'send_sms_code_{mobile_num}')
+    except Exception as e:
+        current_app.logger.error(e)
+    else:
+        if send_flag:
+            return jsonify(error=RET.REQERR, errmsg='请求过于频繁，请60秒后重试')
+
     # 2. 验证手机是否以注册
     try:
         user = User.query.filter_by(mobile=mobile_num).first()
@@ -92,9 +101,15 @@ def get_sms_code(mobile_num):
 
     try:
         redis_store.setex(
-            mobile_num,
+            f'sms_code_{mobile_num}',
             constants.SMS_CODE_REDIS_EXPIRES,
             sms_code
+        )
+        # 保存手机发送短信验证码的记录，限制60秒内重复发送
+        redis_store.setex(
+            f'send_sms_code_{mobile_num}',
+            constants.SEND_SMS_CODE_INTERVAL,
+            1
         )
     except Exception as e:
         return jsonify(error=RET.DBERR, errmsg='redis数据库异常')

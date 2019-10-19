@@ -25,7 +25,7 @@ softVersion = '2013-12-26'
 # @param $tempId 模板Id
 
 
-class CCR():
+class CCP():
     instancs = None
 
     def __new__(cls):
@@ -43,19 +43,23 @@ class CCR():
         self.rest.setAccount(accountSid, accountToken)
         self.rest.setAppId(appId)
 
-    def sendTemplateSMS(self, to, datas, tempId):
-        result = self.rest.sendTemplateSMS(to, datas, tempId)
-        print(result)
-        for k, v in result.items():
+    def send_template_sms(self, to, datas, temp_id):
 
-            if k == 'templateSMS':
-                for k, s in v.items():
-                    print('%s:%s' % (k, s))
-            else:
-                print('%s:%s' % (k, v))
+        result = self.rest.sendTemplateSMS(to, datas, temp_id)
+        print(result)
+        # print(result)
+        # for k, v in result.items():
+
+        #     if k == 'templateSMS':
+        #         for k, s in v.items():
+        #             print('%s:%s' % (k, s))
+        #     else:
+        #         print('%s:%s' % (k, v))
+        status = result.get('statusCode')
+        return 0 if '000000' == status else -1
 
 
 # sendTemplateSMS(手机号码,内容数据,模板Id)
 if __name__ == "__main__":
-    ccr = CCR()
-    ccr.sendTemplateSMS('18855164785', ['12321', '5'], 1)
+    ccp = CCP()
+    ccp.send_template_sms('18855164785', ['12321', '5'], 1)

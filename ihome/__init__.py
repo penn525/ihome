@@ -44,7 +44,7 @@ def create_app(config_name='product'):
     db.init_app(app)
 
     # 开启 csrf 保护
-    # CSRFProtect(app)
+    CSRFProtect(app)
 
     # flask-session
     Session(app)

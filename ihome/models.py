@@ -1,4 +1,5 @@
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 from . import db
 
 
@@ -25,6 +26,18 @@ class User(BaseModel, db.Model):
     houses = db.relationship("House", backref="user")  # 用户发布的房屋
     orders = db.relationship("Order", backref="user")  # 用户下的订单
 
+    @property
+    def password(self):
+        # return self.password_hash
+        raise AttributeError('改属性只能设置，不能读取')
+    
+    @password.setter
+    def password(self, origin_password):
+        self.password_hash = generate_password_hash(origin_password)
+
+    def __repr__(self):
+        return f'<User: {self.name}>'
+
 
 class Area(BaseModel, db.Model):
     """城区"""
@@ -34,6 +47,9 @@ class Area(BaseModel, db.Model):
     id = db.Column(db.Integer, primary_key=True)  # 区域编号
     name = db.Column(db.String(32), nullable=False)  # 区域名字
     houses = db.relationship("House", backref="area")  # 区域的房屋
+
+    def __repr__(self):
+        return f'<User: {self.name}>'
 
 
 # 房屋设施表，建立房屋与设施的多对多关系, 联合主键
@@ -73,6 +89,8 @@ class House(BaseModel, db.Model):
     images = db.relationship("HouseImage")  # 房屋的图片
     orders = db.relationship("Order", backref="house")  # 房屋的订单
 
+    def __repr__(self):
+        return f'<User: {self.title}>'
 
 class Facility(BaseModel, db.Model):
     """设施信息"""

@@ -15,6 +15,11 @@ db = SQLAlchemy()
 redis_store = None
 
 # 日志配置
+try:
+    os.makedirs("logs")
+except:
+    pass
+
 logging.basicConfig(level=logging.DEBUG)
 file_log_handler = RotatingFileHandler(
     'logs/log', maxBytes=1024*1024*100, backupCount=10)
@@ -39,7 +44,7 @@ def create_app(config_name='product'):
     db.init_app(app)
 
     # 开启 csrf 保护
-    CSRFProtect(app)
+    # CSRFProtect(app)
 
     # flask-session
     Session(app)
@@ -47,7 +52,7 @@ def create_app(config_name='product'):
     global redis_store
     redis_store = redis.StrictRedis(
         host=app.config.get('REDIS_HOST'),
-        port=app.config.get('REDIS_PORT')
+        port=app.config.get('REDIS_PORT'),
     )
 
     # 将自定义转换器类,添加到默认的转换列表中
@@ -59,11 +64,5 @@ def create_app(config_name='product'):
 
     from ihome.web_html import html
     app.register_blueprint(html)
-
-    # 日志文件夹
-    try:
-        os.makedirs('logs')
-    except:
-        pass
 
     return app

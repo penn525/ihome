@@ -91,7 +91,9 @@ $(document).ready(function () {
     $("#password2").focus(function () {
         $("#password2-err").hide();
     });
+    // 为表单的提交添加自定义函数 （提交事件）
     $(".form-register").submit(function (e) {
+        // 阻止浏览器默认的表单提交事件
         e.preventDefault();
         mobile = $("#mobile").val();
         phoneCode = $("#phonecode").val();
@@ -117,5 +119,27 @@ $(document).ready(function () {
             $("#password2-err").show();
             return;
         }
+
+        var req_data = {
+            "mobile": mobile,
+            "password": passwd,
+            "password2": passwd2,
+            "sms_code": phoneCode
+        };
+        var req_json = JSON.stringify(req_data);
+        $.ajax({
+            type: "post",
+            url: "/api/v1.0/users",
+            data: req_json,
+            contentType: "application/json",
+            dataType: "json",
+            success: function (rsp) {
+                if (rsp.errno == 0) {
+                    location.href = "/index.html"
+                } else {
+                    alert(rsp.errmsg)
+                }
+            }
+        });
     });
 })

@@ -23,7 +23,7 @@ def register():
     mobile = req_dict.get('mobile')
     password = req_dict.get('password')
     password2 = req_dict.get('password2')
-    sms_code = req_dict.get('phonecode')
+    sms_code = req_dict.get('sms_code')
 
     if not all([mobile, password, password2, sms_code]):
         return jsonify(errno=RET.PARAMERR, errmsg='参数不完整')

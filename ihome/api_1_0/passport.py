@@ -139,3 +139,19 @@ def login():
     session['user_id'] = user.id
 
     return jsonify(errno=RET.OK, errmsg='登录成功')
+
+
+@api.route('/session', methods=['GET'])
+def check_login():
+    """检查用户登录状态"""
+    name = session.get('name')
+    if name is None:
+        return jsonify(errno=RET.SESSIONERR, errmsg='false')
+    return jsonify(errno=RET.OK, errmsg='true', data={'name': name})
+
+
+@api.route('/session', methods=['DELETE'])
+def logout():
+    """用户登出"""
+    session.clear()
+    return jsonify(errno=RET.OK, errmsg='OK')

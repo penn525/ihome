@@ -89,7 +89,7 @@ def register():
     return jsonify(errno=RET.OK, errmsg='注册成功')
 
 
-@api.route('/sessions', methods=['POST'])
+@api.route('/session', methods=['POST'])
 def login():
     """用户登录"""
     # 1. 获取参数

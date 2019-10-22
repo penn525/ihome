@@ -32,7 +32,7 @@ $(document).ready(function () {
         var req_json = JSON.stringify(req_data)
         $.ajax({
             type: "post",
-            url: "/api/v1.0/sessions",
+            url: "/api/v1.0/session",
             data: req_json,
             dataType: "json",
             contentType: "application/json",

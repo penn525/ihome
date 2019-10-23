@@ -26,7 +26,7 @@ $(document).ready(function () {
             },
             success: function (rsp) { 
                 if (rsp.errno == 0) {
-                    $("#user-avatar").attr('"src', rsp.data.avatar_url)
+                    $("#user-avatar").attr('src', rsp.data.avatar_url)
                 } else {
                     alert(rsp.errmsg)
                 }

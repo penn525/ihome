@@ -16,7 +16,7 @@ def storage(file_data):
     """
     q = Auth(access_key, secret_key)
 
-    bucket_name = 'ihome-py'
+    bucket_name = 'ihome-2019'
 
     # # 上传文件到七牛后， 七牛将文件名和文件大小回调给业务服务器。
     # policy = {

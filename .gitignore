@@ -4,6 +4,8 @@
 .idea/
 # 日志文件
 logs/
+# 七牛sdk文件
+.qiniu_pythonsdk_hostscache.json
 
 # 数据库迁移文件
 migrations/

@@ -14,4 +14,4 @@ LOGIN_ERROR_MAX_TIMES = 3
 LOGIN_ERROR_FORBID_TIME = 300
 
 # 七牛文件域名
-QINIU_URL_DOMAIN=''
+QINIU_URL_DOMAIN = 'http://pztl5gcjf.bkt.clouddn.com/'

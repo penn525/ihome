@@ -33,7 +33,7 @@ def set_user_avatar():
 
     # 3. 更新数据库用户信息
     try:
-        g.user.update({'avatar_url': file_name})
+        g.user.avatar_url = file_name
         db.session.commit()
     except Exception as e:
         db.session.rollback()

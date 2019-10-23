@@ -1,5 +1,8 @@
+import json
+
 from flask import current_app, g, request
 from flask.json import jsonify
+from sqlalchemy.exc import IntegrityError
 
 from ihome import constants, db
 from ihome.api_1_0 import api
@@ -29,7 +32,7 @@ def set_user_avatar():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.THIRDERR, errmsg='上传头像失败')
-    
+
     # 3. 更新数据库用户信息
     try:
         g.user.update({'avatar_url': file_name})
@@ -37,11 +40,64 @@ def set_user_avatar():
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(e)
-        return jsonify(errno=RET.DBERR, errmsg='保存图片信息失败') 
-    
+        return jsonify(errno=RET.DBERR, errmsg='保存图片信息失败')
+
     # 4. 设置用户头像 avatar_url
     return jsonify(
-        errno=RET.OK, 
-        errmsg='上传头像成功', 
+        errno=RET.OK,
+        errmsg='上传头像成功',
         data={'avatar_url': constants.QINIU_URL_DOMAIN+file_name}
+    )
+
+
+@api.route('/users/name', methods=['POST'])
+@login_required
+def set_user_name():
+    """设置用户名称"""
+    # 1. 校验参数完整性
+    user_id = g.user.id
+    name = request.get_json().get('name')
+    if name is None:
+        return jsonify(errno=RET.PARAMERR, errmsg='请填写用户名')
+
+    # 2. 保存用户数据
+    try:
+        # 1) 直接更改user对象属性，再保存
+        g.user.name = name
+        # 2） 查询的 BaseQuery 对象的 update 方法进行保存
+        # User.query.filter_by(id=user_id).update({'name': name})
+        db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DATAEXIST, errmsg='用户名已存在，请重新设置')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='保存用户名失败')
+
+    return jsonify(errno=RET.OK, errmsg='保存成功', data={'name': name})
+
+
+@api.route('/users', methods=['GET'])
+@login_required
+def get_user_profile():
+    """获取用户信息"""
+    user = g.user
+    if user is None:
+        return jsonify(errno=RET.USERERR, errmsg='获取用户信息失败')
+
+    if user.avatar_url is None:
+        avatar_url = ''
+    else:
+        avatar_url = constants.QINIU_URL_DOMAIN + user.avatar_url
+    user_info = {
+        "name": user.name,
+        "mobile": user.mobile,
+        "avatar_url": avatar_url
+    }
+    return jsonify(
+        errno=RET.OK,
+        errmsg='获取用户信息成功',
+        data={'user': user_info}
     )

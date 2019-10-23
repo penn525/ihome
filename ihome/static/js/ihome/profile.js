@@ -12,6 +12,9 @@ function getCookie(name) {
 }
 
 $(document).ready(function () {
+    /**
+     * 设置用户头像
+     */
     $('#form-avatar').submit(function (e) { 
         e.preventDefault();
         $(this).ajaxSubmit({
@@ -30,4 +33,39 @@ $(document).ready(function () {
              }
         })
     });
+
+
+    /**
+     * 设置用户名称
+     */
+    $("#form-name").submit(function (e) { 
+        e.preventDefault();
+        var name = $('#user-name').val();
+        if (!name) {
+            $('.error-msg b').html('请填写用户名').parent().show();
+            return;
+        }
+        var req_data = {'name': name};
+        var req_json = JSON.stringify(req_data);
+        $.ajax({
+            type: "post",
+            url: "/api/v1.0/users/name",
+            data: req_json,
+            contentType: "application/json",
+            dataType: "json",
+            headers: {
+                'X-CSRFToken': getCookie('csrf_token')
+            },
+            success: function (rsp) {
+                if (rsp.errno == "0") {
+                    console.log(1)
+                    $('.error-msg').hide()
+                } else {
+                    console.log(2)
+                    $('.error-msg b').html(rsp.errmsg).parent().show()
+                } 
+            }
+        });
+    });
+
 });

@@ -1,5 +1,3 @@
-import json
-
 from flask import current_app, g, request
 from flask.json import jsonify
 from sqlalchemy.exc import IntegrityError
@@ -100,4 +98,53 @@ def get_user_profile():
         errno=RET.OK,
         errmsg='获取用户信息成功',
         data={'user': user_info}
+    )
+
+
+@api.route('/users/auth', methods=['POST'])
+@login_required
+def user_auth():
+    """用户实名认证"""
+    req_json = request.get_json()
+    user = g.user
+    real_name = req_json.get('real_name')
+    id_card = req_json.get('id_card')
+
+    if not all([real_name, id_card]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数不完整')
+
+    if user is None:
+        return jsonify(errno=RET.USERERR, errmsg='获取用户信息失败')
+
+    try:
+        user.real_name = real_name
+        user.id_card = id_card
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库操作失败')
+
+    g.user = user
+    data = {'real_name': real_name, 'id_card': id_card}
+    return jsonify(errno=RET.OK, errmsg='实名认证成功', data=data)
+
+
+@api.route('/users/auth', methods=['GET'])
+@login_required
+def get_user_auth():
+    """查询用户认证信息"""
+    real_name = g.user.real_name
+    id_card = g.user.id_card
+
+    if not all([real_name, id_card]):
+        return jsonify(errno=RET.DATAERR, errmsg='未进行实名认证')
+
+    return jsonify(
+        errno=RET.OK,
+        errmsg='获取认证信息成功',
+        data={
+            'real_name': real_name,
+            'id_card': id_card
+        }
     )

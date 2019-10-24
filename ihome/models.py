@@ -8,10 +8,10 @@ from ihome import db
 class BaseModel(object):
     """模型基类，为每个模型补充创建时间与更新时间"""
 
-    create_time = db.Column(db.DateTime, default=datetime.now)  # 记录的创建时间
+    create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(
-        db.DateTime, default=datetime.now, onupdate=datetime.now)  # 记录的更新时间
-
+        db.DateTime, default=datetime.now, onupdate=datetime.now)
+ 
 
 class User(BaseModel, db.Model):
     """用户"""
@@ -51,7 +51,13 @@ class Area(BaseModel, db.Model):
     houses = db.relationship("House", backref="area")  # 区域的房屋
 
     def __repr__(self):
-        return f'<User: {self.name}>'
+        return f'<Area: {self.name}>'
+
+    def to_dict(self):
+        return {
+            'aid': self.id,
+            'aname': self.name
+        }
 
 
 # 房屋设施表，建立房屋与设施的多对多关系, 联合主键
@@ -92,7 +98,7 @@ class House(BaseModel, db.Model):
     orders = db.relationship("Order", backref="house")  # 房屋的订单
 
     def __repr__(self):
-        return f'<User: {self.title}>'
+        return f'<House: {self.title}>'
 
 class Facility(BaseModel, db.Model):
     """设施信息"""

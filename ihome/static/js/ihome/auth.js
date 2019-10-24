@@ -25,20 +25,23 @@ $(document).ready(function () {
  * 获取用户实名认证信息
  */
 function get_user_auth() {
-    $.ajax({
-        type: "get",
-        url: "/api/v1.0/users/auth",
-        dataType: "json",
-        success: function (rsp) {
-            if (rsp.errno == '0') {
-                $('.error-msg').hide();
-                $('#real-name').val(rsp.data.real_name);
-                $('#id-card').val(rsp.data.id_card);
+    $.get("/api/v1.0/user", function (rsp) {
+            if ('0' == rsp.errno) {
+                if (rsp.data.user.real_name && rsp.data.user.id_card) {
+                    $('#real-name').val(rsp.data.user.real_name).prop('disabled', 'disabled')
+                    $('#id-card').val(rsp.data.user.id_card).prop('disabled', 'disabled')
+                    $('.error-msg').hide()
+                    $('#form-auth>input[type=submit]').hide()
+                }
+            } else if ('4101' == rsp.errno) {
+                location.href = '/login.html'
             } else {
-                $('.error-msg b').html(rsp.errmsg).parent().show();
+                alert(rsp.data.errmsg)
             }
-        }
-    });
+        },
+        "json"
+    );
+    
 }
 
 /**
@@ -62,8 +65,8 @@ function set_user_auth() {
     }
 
     $.ajax({
-        type: "post",
-        url: "/api/v1.0/users/auth",
+        type: "put",
+        url: "/api/v1.0/user/auth",
         data: JSON.stringify(data),
         contentType: "application/json",
         dataType: "json",
@@ -71,7 +74,19 @@ function set_user_auth() {
             'X-CSRFToken': getCookie('csrf_token')
         },
         success: function (rsp) {
-            $('.error-msg b').html(rsp.errmsg)
+            if ('0' == rsp.errno) {
+                if (rsp.data.real_name && rsp.data.id_card) {
+                    $('#real-name').val(rsp.data.real_name).prop('disabled', 'disabled')
+                    $('#id-card').val(rsp.data.id_card).prop('disabled', 'disabled')
+                    $('.error-msg').hide()
+                    $('#form-auth>input[type=submit]').hide()
+                    showSuccessMsg()
+                }
+            } else if ('4101' == rsp.errno) {
+                location.href = '/login.html'
+            } else {
+                alert(rsp.data.errmsg)
+            }
         }
     });
 }

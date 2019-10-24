@@ -15,3 +15,6 @@ LOGIN_ERROR_FORBID_TIME = 300
 
 # 七牛文件域名
 QINIU_URL_DOMAIN = 'http://pztl5gcjf.bkt.clouddn.com/'
+
+# 区域redis缓存时间
+AREA_INFO_REDIS_CACHE_EXPIRES = 1800

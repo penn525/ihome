@@ -25,14 +25,18 @@ def login_required(view):
     def view_wrapper(*args, **kwargs):
         from ihome.models import User
         from ihome.utils.response_code import RET
-        g.user = None
+
         user_id = session.get('user_id')
         if user_id is None:
             return jsonify(errno=RET.SESSIONERR, errmsg='用户未登录')
         try:
-            g.user = User.query.get(user_id)
+            user = User.query.get(user_id)
         except Exception as e:
             return jsonify(errno=RET.DBERR, errmsg='读取用户信息异常')
+        else:
+            g.user_id = user.id
+            g.name = user.name
+            g.mobile = user.mobile
         return view(*args, **kwargs)
 
     return view_wrapper

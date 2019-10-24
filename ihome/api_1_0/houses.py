@@ -29,23 +29,22 @@ def get_areas():
     except Exception as e:
         current_app.logger.err(e)
         return jsonify(errno=RET.DBERR, errmsg='数据库查询异常')
-    
+
     areas_list = []
     for area in areas:
         areas_list.append(area.to_dict())
-    
+
     # 将数据转换成json字符串
     rsp_dict = dict(errno=RET.OK, errmsg='OK', data=areas_list)
     rsp_json = json.dumps(rsp_dict)
 
     try:
         redis_store.setex(
-            'area_info', 
-            constants.AREA_INFO_REDIS_CACHE_EXPIRES, 
+            'area_info',
+            constants.AREA_INFO_REDIS_CACHE_EXPIRES,
             rsp_json
         )
     except Exception as e:
         current_app.logger.error(e)
-    
+
     return rsp_json, 200, {'Content-Type': 'application/json'}
-    

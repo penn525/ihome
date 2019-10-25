@@ -1,9 +1,9 @@
-function getCookie(name) {
+function getCookie (name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-    return r ? r[1] : undefined;
+    return r ? r[ 1 ] : undefined;
 };
 
-function logout() {
+function logout () {
     $.ajax({
         type: "delete",
         url: "/api/v1.0/session",

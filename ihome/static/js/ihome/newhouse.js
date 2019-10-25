@@ -6,6 +6,23 @@ function getCookie (name) {
 $(document).ready(function () {
     // $('.popup_con').fadeIn('fast');
     // $('.popup_con').fadeOut('fast');
+    $.ajax({
+        type: "get",
+        url: "/api/v1.0/user",
+        dataType: "json",
+        success: function (rsp) {
+            if ('0' == rsp.errno) {
+                user = rsp.data.user
+                $('#user-avatar').attr('src', user.avatar_url)
+                $('#user-name').html(user.name)
+                $('#user-mobile').html(user.mobile)
+            } else if ('4101' == rsp.errno) {
+                location.href = '/login.html'
+            } else {
+                alert(rsp.errmsg)
+            }
+        }
+    });
 
     // 查询所有区域
     $.get("/api/v1.0/areas",

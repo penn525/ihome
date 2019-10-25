@@ -115,7 +115,7 @@ def get_user_profile():
         "real_name": user.real_name,
         "id_card": user.id_card
     }
-    
+
     return jsonify(
         errno=RET.OK,
         errmsg='获取用户信息成功',
@@ -157,9 +157,6 @@ def get_user_auth():
     """查询用户认证信息"""
     user_id = g.user_id
 
-    if user_id is None:
-        return jsonify(errno=RET.SESSIONERR, errmsg='获取登录信息失败')
-    
     try:
         user = User.query.get(user_id)
     except Exception as e:

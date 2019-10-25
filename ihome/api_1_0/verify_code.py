@@ -5,8 +5,8 @@ from flask.json import jsonify
 
 from ihome import constants, db, redis_store
 from ihome.api_1_0 import api
-from ihome.libs.cloudcommunication.SendTemplateSMS import CCP
 from ihome.models import User
+from ihome.tasks.task_sms import send_sms
 from ihome.utils.captcha.captcha import captcha
 from ihome.utils.response_code import RET
 
@@ -67,7 +67,7 @@ def get_sms_code(mobile_num):
 
     if not real_image_code:
         return jsonify(errno=RET.NODATA, errmsg='图片验证码失效')
-    
+
     # 删除redis中图片验证码，防止用户多次尝试, 生产环境开启
     try:
         redis_store.delete(f'image_code_{image_code_id}')
@@ -115,18 +115,18 @@ def get_sms_code(mobile_num):
         return jsonify(errno=RET.DBERR, errmsg='redis数据库异常')
 
     # 4. 发送手机验证码
-    ccp = CCP()
-    try:
-        status = ccp.send_template_sms(
-            mobile_num,
-            [sms_code, str(constants.SMS_CODE_REDIS_EXPIRES//60)],
-            1
-        )
-    except Exception as e:
-        current_app.logger.error(e)
-        return jsonify(errno=RET.THIRDERR, errmsg='短信发送异常')
+    # try:
+    #     status = ccp.send_template_sms(
+    #         mobile_num,
+    #         [sms_code, str(constants.SMS_CODE_REDIS_EXPIRES//60)],
+    #         1
+    #     )
+    # except Exception as e:
+    #     current_app.logger.error(e)
+    #     return jsonify(errno=RET.THIRDERR, errmsg='短信发送异常')
 
-    if status != 0:
-        return jsonify(errno=RET.THIRDERR, errmsg='短信发送失败')
-    else:
-        return jsonify(errno=RET.OK, errmsg='短信发送成功')
+    # celery 发布异步任务
+    send_sms.delay(mobile_num, sms_code, str(
+        constants.SMS_CODE_REDIS_EXPIRES//60), 1)
+
+    return jsonify(errno=RET.OK, errmsg='短信发送成功')

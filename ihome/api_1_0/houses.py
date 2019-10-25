@@ -185,3 +185,26 @@ def save_house_image():
 
     image_url = constants.QINIU_URL_DOMAIN + file_name
     return jsonify(errno=RET.OK, errmsg='OK', data={'image_url': image_url})
+
+
+@api.route('/user/houses', methods=['GET'])
+@login_required
+def get_user_houses():
+    """获取用户房源"""
+    user_id = g.user_id
+    try:
+        houses = House.query.filter_by(user_id=user_id).all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库查询异常')
+
+    house_list = []
+    for house in houses:
+        house_list.append(house.to_basic_dict())
+
+    # 将数据转换成json字符串
+    # rsp_dict = dict(errno=RET.OK, errmsg='OK', data=house_list)
+    # rsp_json = json.dumps(rsp_dict)
+    # return rsp_json, 200, {'Content-Type': 'application/json'}
+
+    return jsonify(errno=RET.OK, errmsg='OK', data={'houses': house_list})

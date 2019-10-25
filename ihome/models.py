@@ -2,7 +2,7 @@ from datetime import datetime
 
 from werkzeug.security import generate_password_hash
 
-from ihome import db
+from ihome import db, constants
 
 
 class BaseModel(object):
@@ -99,6 +99,16 @@ class House(BaseModel, db.Model):
 
     def __repr__(self):
         return f'<House: {self.title}>'
+
+    def to_basic_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'area': self.area.name,
+            'price': '%.2f' % (self.price/100),
+            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'index_image_url': constants.QINIU_URL_DOMAIN + self.index_image_url
+        }
 
 
 class Facility(BaseModel, db.Model):

@@ -11,7 +11,7 @@ class BaseModel(object):
     create_time = db.Column(db.DateTime, default=datetime.now)
     update_time = db.Column(
         db.DateTime, default=datetime.now, onupdate=datetime.now)
- 
+
 
 class User(BaseModel, db.Model):
     """用户"""
@@ -32,7 +32,7 @@ class User(BaseModel, db.Model):
     def password(self):
         # return self.password_hash
         raise AttributeError('改属性只能设置，不能读取')
-    
+
     @password.setter
     def password(self, origin_password):
         self.password_hash = generate_password_hash(origin_password)
@@ -99,6 +99,7 @@ class House(BaseModel, db.Model):
 
     def __repr__(self):
         return f'<House: {self.title}>'
+
 
 class Facility(BaseModel, db.Model):
     """设施信息"""

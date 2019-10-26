@@ -22,7 +22,7 @@ def get_areas():
         current_app.logger.error(e)
     else:
         if rsp_json is not None:
-            current_app.logger.info('hit redis')
+            current_app.logger.info('hit area into redis')
             return rsp_json, 200, {'Content-Type': 'application/json'}
 
     try:
@@ -73,7 +73,9 @@ def save_house_info():
     max_days = house_data.get('max_days')
 
     # 2. 校验参数
-    if not all([title, price, area_id, address, room_count, acreage, unit,                  capacity, beds, deposit, min_days, max_days]):
+    if not all(
+            [title, price, area_id, address, room_count, acreage, unit,
+             capacity, beds, deposit, min_days, max_days]):
         return jsonify(errno=RET.PARAMERR, errmsg='参数不完整')
 
     try:
@@ -208,3 +210,45 @@ def get_user_houses():
     # return rsp_json, 200, {'Content-Type': 'application/json'}
 
     return jsonify(errno=RET.OK, errmsg='OK', data={'houses': house_list})
+
+
+@api.route('/houses/index', methods=['GET'])
+def get_house_index():
+    """获取主页幻灯片的基本房屋信息"""
+    # 1. 尝试从 redis 数据库获取主页房
+    houses = None
+    try:
+        houses = redis_store.get('home_page_data')
+    except Exception as e:
+        current_app.logger.error(e)
+
+    if houses:
+        current_app.logger.info('hit house index info redis')
+        # return jsonify(errno=RET.OK, errmsg='OK', data={'houses': houses})
+        return '{"errno": 0, "errmsg": "OK", "data": %s}' % (houses.decode()),            200, {'Content-Type': 'application/json'}
+
+    # 2. 如果没有从 mysql 数据库查询获得， 并将查询的数据放入redis中
+    try:
+        houses = House.query.order_by(
+            House.order_count.desc()).limit(
+            constants.HOME_PAGE_MAX_HOUSE).all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询数据失败')
+
+    if not houses:
+        return jsonify(errno=RET.NODATA, errmsg='查询无数据')
+
+    # 把house对象转换成字符串，存入redis缓存
+    # [<house1>, <house2>, ...]
+    house_list = []
+    for house in houses:
+        if house.index_image_url:
+            house_list.append(house.to_basic_dict())
+    house_json = json.dumps(house_list)  # '[{}, {}, {}]'
+    try:
+        redis_store.setex('home_page_data',
+                          constants.HOME_PAGE_REDIS_CACHE_EXPIRES, house_json)
+    except Exception as e:
+        current_app.logger.error(e)
+    return '{"errno": 0, "errmsg": "OK", "data": %s}' % house_json, 200,                {'Content-Type': 'application/json'}

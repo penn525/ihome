@@ -29,7 +29,7 @@
         </div>
         <div class="swiper-container">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
+                <!-- <div class="swiper-slide">
                     <a href="/detail.html?id=1"><img src="/static/images/home01.jpg"></a>
                     <div class="slide-title">房屋标题1</div>
                 </div>
@@ -40,60 +40,57 @@
                 <div class="swiper-slide">
                     <a href="/detail.html?id=3"><img src="/static/images/home03.jpg"></a>
                     <div class="slide-title">房屋标题3</div>
-                </div>
+                </div> -->
             </div>
+            <script type="text/html" id="swiper-houses-tmpl">
+                {{ each houses as house }}
+                <div class="swiper-slide">
+                    <a href="/detail.html?id={{ house.id }}"><img src="{{ house.index_image_url }}"></a>
+                    <div class="slide-title">{{ house.title }}</div>
+                </div>
+                {{ /each }}
+            </script>
             <div class="swiper-pagination"></div>
         </div>
         <div class="search-bar">
             <button class="filter-btn" type="button" data-toggle="modal" data-target="#area-modal"><span class="fl"
-                    id="area-btn">选择城区</span><span class="fr"><i
-                        class="fa fa-map-marker fa-lg fa-fw"></i></span></button>
+                      id="area-btn">选择城区</span><span class="fr"><i
+                       class="fa fa-map-marker fa-lg fa-fw"></i></span></button>
             <button class="filter-btn" type="button" data-toggle="modal" data-target="#start-date-modal"><span
-                    class="fl" id="start-date-btn">入住日期</span><span class="fr"><i
-                        class="fa fa-calendar fa-lg fa-fw"></i></span></button>
+                      class="fl" id="start-date-btn">入住日期</span><span class="fr"><i
+                       class="fa fa-calendar fa-lg fa-fw"></i></span></button>
             <button class="filter-btn end-date" type="button" data-toggle="modal" data-target="#end-date-modal"><span
-                    class="fl" id="end-date-btn">离开日期</span><span class="fr"><i
-                        class="fa fa-calendar fa-lg fa-fw"></i></span></button>
+                      class="fl" id="end-date-btn">离开日期</span><span class="fr"><i
+                       class="fa fa-calendar fa-lg fa-fw"></i></span></button>
             <a class="btn search-btn btn-theme" href="#" onclick="goToSearchPage(this);" area-id="" start-date=""
-                end-date="">搜索</a>
+               end-date="">搜索</a>
             <div class="modal fade" id="area-modal" tabindex="-1" role="dialog" aria-labelledby="area-label">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">&times;</span></button>
+                                      aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="area-label">选择城区</h4>
                         </div>
                         <div class="modal-body">
                             <div class="area-list">
-                                <a href="#" area-id="1">东城区</a>
-                                <a href="#" area-id="2">西城区</a>
-                                <a href="#" area-id="3">朝阳区</a>
-                                <a href="#" area-id="4">海淀区</a>
-                                <a href="#" area-id="5">昌平区</a>
-                                <a href="#" area-id="6">丰台区</a>
-                                <a href="#" area-id="7">房山区</a>
-                                <a href="#" area-id="8">通州区</a>
-                                <a href="#" area-id="9">顺义区</a>
-                                <a href="#" area-id="10">大兴区</a>
-                                <a href="#" area-id="11">怀柔区</a>
-                                <a href="#" area-id="12">平谷区</a>
-                                <a href="#" area-id="13">密云区</a>
-                                <a href="#" area-id="14">延庆区</a>
-                                <a href="#" area-id="15">石景山区</a>
-                                <a href="#" area-id="16">门头沟区</a>
                             </div>
+                            <script id="area-list-tmpl" type="text/html">
+                                {{each areas as area}}
+                                    <a href="#" area-id="{{area.aid}}">{{area.aname}}</a>
+                                {{/each}}
+                            </script>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal fade" id="start-date-modal" tabindex="-1" role="dialog"
-                aria-labelledby="start-date-label">
+                 aria-labelledby="start-date-label">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">&times;</span></button>
+                                      aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="start-date-label">入住日期</h4>
                         </div>
                         <div class="modal-body">
@@ -111,7 +108,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">&times;</span></button>
+                                      aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="end-date-label">离开日期</h4>
                         </div>
                         <div class="modal-body">

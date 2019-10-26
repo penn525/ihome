@@ -110,6 +110,16 @@ class House(BaseModel, db.Model):
             'index_image_url': constants.QINIU_URL_DOMAIN + self.index_image_url
         }
 
+    def to_full_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'area': self.area.name,
+            'price': '%.2f' % (self.price/100),
+            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'index_image_url': constants.QINIU_URL_DOMAIN + self.index_image_url
+        }
+
 
 class Facility(BaseModel, db.Model):
     """设施信息"""

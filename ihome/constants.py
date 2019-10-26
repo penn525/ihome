@@ -18,3 +18,9 @@ QINIU_URL_DOMAIN = 'http://pztl5gcjf.bkt.clouddn.com/'
 
 # 区域redis缓存时间
 AREA_INFO_REDIS_CACHE_EXPIRES = 1800
+
+# 主页房屋最大数量
+HOME_PAGE_MAX_HOUSE = 5
+
+# 主页房屋资源redis缓存时间
+HOME_PAGE_REDIS_CACHE_EXPIRES = 1800

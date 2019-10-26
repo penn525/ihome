@@ -1,15 +1,17 @@
 //模态框居中的控制
-function centerModals() {
-    $('.modal').each(function (i) { //遍历每一个模态框
+function centerModals () {
+    $('.modal').each(function (i) {
+        //遍历每一个模态框
         var $clone = $(this).clone().css('display', 'block').appendTo('body');
         var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
         top = top > 0 ? top : 0;
         $clone.remove();
-        $(this).find('.modal-content').css("margin-top", top - 30); //修正原先已经有的30个像素
+        $(this).find('.modal-content').css("margin-top", top - 30);
+        //修正原先已经有的30个像素
     });
 }
 
-function setStartDate() {
+function setStartDate () {
     var startDate = $("#start-date-input").val();
     if (startDate) {
         $(".search-btn").attr("start-date", startDate);
@@ -25,16 +27,14 @@ function setStartDate() {
             format: "yyyy-mm-dd"
         });
         $("#end-date").on("changeDate", function () {
-            $("#end-date-input").val(
-                $(this).datepicker("getFormattedDate")
-            );
+            $("#end-date-input").val($(this).datepicker("getFormattedDate"));
         });
         $(".end-date").show();
     }
     $("#start-date-modal").modal("hide");
 }
 
-function setEndDate() {
+function setEndDate () {
     var endDate = $("#end-date-input").val();
     if (endDate) {
         $(".search-btn").attr("end-date", endDate);
@@ -43,12 +43,13 @@ function setEndDate() {
     $("#end-date-modal").modal("hide");
 }
 
-function goToSearchPage(th) {
+function goToSearchPage (th) {
     var url = "/search.html?";
     url += ("aid=" + $(th).attr("area-id"));
     url += "&";
     var areaName = $(th).attr("area-name");
-    if (undefined == areaName) areaName = "";
+    if (undefined == areaName)
+        areaName = "";
     url += ("aname=" + areaName);
     url += "&";
     url += ("sd=" + $(th).attr("start-date"));
@@ -58,22 +59,53 @@ function goToSearchPage(th) {
 }
 
 $(document).ready(function () {
-    $(".top-bar>.register-login").show();
-    var mySwiper = new Swiper('.swiper-container', {
-        loop: true,
-        autoplay: 2000,
-        autoplayDisableOnInteraction: false,
-        pagination: '.swiper-pagination',
-        paginationClickable: true
-    });
-    $(".area-list a").click(function (e) {
-        $("#area-btn").html($(this).html());
-        $(".search-btn").attr("area-id", $(this).attr("area-id"));
-        $(".search-btn").attr("area-name", $(this).html());
-        $("#area-modal").modal("hide");
-    });
-    $('.modal').on('show.bs.modal', centerModals); //当模态框出现的时候
-    $(window).on('resize', centerModals); //当窗口大小变化的时候
+    // 根据登录状态显示按钮还是名称
+    $.get("/api/v1.0/session", function (rsp) {
+        // console.log(data)
+        if ("0" == rsp.errno) {
+            $('.register-login').hide();
+            $(".top-bar>.user-info>.user-name").html(rsp.data.name);
+            $(".top-bar>.user-info").show();
+        } else {
+            $(".top-bar>.register-login").show();
+        }
+    }, "json");
+
+    // 获取幻灯片要展示的房屋基本信息
+    $.get("/api/v1.0/houses/index", function (resp) {
+        console.log(resp)
+        if ("0" == resp.errno) {
+            $(".swiper-wrapper").html(template("swiper-houses-tmpl", { houses: resp.data }));
+
+            // 设置幻灯片对象，开启幻灯片滚动
+            var mySwiper = new Swiper('.swiper-container', {
+                loop: true,
+                autoplay: 2000,
+                autoplayDisableOnInteraction: false,
+                pagination: '.swiper-pagination',
+                paginationClickable: true
+            });
+        }
+    }, "json");
+
+    // 获取城区信息
+    $.get("/api/v1.0/areas", function (resp) {
+        if ("0" == resp.errno) {
+            $(".area-list").html(template("area-list-tmpl", { areas: resp.data }));
+
+            $(".area-list a").click(function (e) {
+                $("#area-btn").html($(this).html());
+                $(".search-btn").attr("area-id", $(this).attr("area-id"));
+                $(".search-btn").attr("area-name", $(this).html());
+                $("#area-modal").modal("hide");
+            });
+        }
+    }, "json");
+
+    $('.modal').on('show.bs.modal', centerModals);
+    //当模态框出现的时候
+    $(window).on('resize', centerModals);
+    //当窗口大小变化的时候
     $("#start-date").datepicker({
         language: "zh-CN",
         keyboardNavigation: false,
@@ -85,20 +117,4 @@ $(document).ready(function () {
         $("#start-date-input").val(date);
     });
 
-    // 根据登录状态显示按钮还是名称
-    $.get("/api/v1.0/session",
-        function (rsp) {
-            // console.log(data)
-            if (rsp.errno == 0) {
-                $('.register-login').hide();
-                $('.user-info .user-name').html(rsp.data.name);
-                $('.user-info').show();
-            } else {
-                $('.user-info .user-name').empty();
-                $('.user-info').hide();
-                $('.register-login').show();
-            }
-        },
-        "json"
-    );
 })

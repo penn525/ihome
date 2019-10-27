@@ -112,7 +112,7 @@ def save_house_info():
     )
 
     # 4. 校验是否有设备，若有设备，设备id是否存在
-    facility_ids = house_data.get('facility')
+    facility_ids = house_data.get('facilities')
     if facility_ids:
         try:
             facilities = Facility.query.filter(

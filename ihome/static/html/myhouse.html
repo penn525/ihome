@@ -39,46 +39,11 @@
                         <a href="/newhouse.html">发布新房源</a>
                     </div>
                 </li>
-                <!--                 
-                <li>
-                    <a href="/detail.html?id={{house.house_id}}&f=my">
-                        <div class="house-title">
-                            <h3>房屋ID:1 —— 房屋标题1</h3>
-                        </div>
-                        <div class="house-content">
-                            <img src="/static/images/home01.jpg">
-                            <div class="house-text">
-                                <ul>
-                                    <li>位于：西城区</li>
-                                    <li>价格：￥200/晚</li>
-                                    <li>发布时间：2016-11-11 20:00:00</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </a>
-                </li>
-                <li>
-                    <a href="/detail.html?id={{house.house_id}}&f=my">
-                        <div class="house-title">
-                            <h3>房屋ID:1 —— 房屋标题1</h3>
-                        </div>
-                        <div class="house-content">
-                            <img src="/static/images/home01.jpg">
-                            <div class="house-text">
-                                <ul>
-                                    <li>位于：西城区</li>
-                                    <li>价格：￥200/晚</li>
-                                    <li>发布时间：2016-11-11 20:00:00</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </a>
-                </li> -->
             </ul>
             <script type="text/html" id="houses-tmpl">
                 {{ each houses as house }}
                     <li>
-                        <a href="/detail.html?id={{house.house_id}}&f=my">
+                        <a href="/detail.html?id={{house.id}}&f=my">
                             <div class="house-title">
                                 <h3>房屋ID:{{ house.id }} —— {{ house.title }}</h3>
                             </div>

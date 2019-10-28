@@ -1,6 +1,6 @@
 import json
 
-from flask import current_app, g, request
+from flask import current_app, g, request, session
 from flask.json import jsonify
 
 from ihome import constants, db, redis_store
@@ -225,7 +225,8 @@ def get_house_index():
     if houses:
         current_app.logger.info('hit house index info redis')
         # return jsonify(errno=RET.OK, errmsg='OK', data={'houses': houses})
-        return '{"errno": 0, "errmsg": "OK", "data": %s}' % (houses.decode()),            200, {'Content-Type': 'application/json'}
+        return '{"errno": 0, "errmsg": "OK", "data": %s}' % (
+            houses.decode()), 200, {'Content-Type': 'application/json'}
 
     # 2. 如果没有从 mysql 数据库查询获得， 并将查询的数据放入redis中
     try:
@@ -251,4 +252,56 @@ def get_house_index():
                           constants.HOME_PAGE_REDIS_CACHE_EXPIRES, house_json)
     except Exception as e:
         current_app.logger.error(e)
-    return '{"errno": 0, "errmsg": "OK", "data": %s}' % house_json, 200,                {'Content-Type': 'application/json'}
+    return '{"errno": 0, "errmsg": "OK", "data": %s}' % house_json, 200, {
+        'Content-Type': 'application/json'}
+
+
+@api.route('/house/<int:house_id>', methods=['GET'])
+def get_house_detail(house_id):
+    """获取房源详情"""
+    if not house_id:
+        return jsonify(errno=RET.PARAMERR, errmsg='参数缺失')
+
+    user_id = session.get('user_id', '-1')
+    house_info = None
+    try:
+        house_info = redis_store.get(f'house_info_{house_id}').decode()
+    except Exception as e:
+        current_app.logger.error(e)
+
+    if house_info:
+        current_app.logger.info('hit house info redis')
+        return '{"errno": "0", "errmsg": "OK", "data": {"house_info": %s, ' \
+               '"user_id": %s}}' % (house_info, user_id), \
+               200, \
+               {'Content-Type': 'application/json'}
+
+    try:
+        house = House.query.get(int(house_id))
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+
+    if not house:
+        return jsonify(errno=RET.NODATA, errmsg='房屋不存在')
+
+    try:
+        house_data = house.to_full_dict()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DATAERR, errmsg='数据出错')
+
+    house_json = json.dumps(house_data)
+    try:
+        redis_store.setex(f'house_info_{house_id}',
+                          constants.HOUSE_DETAIL_REDIS_CACHE_EXPIRES,
+                          house_json)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    resp = '{"errno": "0", "errmsg": "OK", "data": {"house_info": %s,' \
+           '"user_id": %s}}' % (house_json, user_id), \
+           200, \
+           {'Content-Type': 'application/json'}
+
+    return resp

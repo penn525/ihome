@@ -111,14 +111,51 @@ class House(BaseModel, db.Model):
         }
 
     def to_full_dict(self):
-        return {
-            'id': self.id,
+        house_dict = {
+            'hid': self.id,
+            'uid': self.user_id,
+            'uname': self.user.name,
             'title': self.title,
-            'area': self.area.name,
             'price': '%.2f' % (self.price/100),
-            'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'index_image_url': constants.QINIU_URL_DOMAIN + self.index_image_url
+            'address': self.address,
+            'room_count': self.room_count,
+            'acreage': self.acreage,
+            'unit': self.unit,
+            'capacity': self.capacity,
+            'beds': self.beds,
+            'deposit': '%.2f' % (self.deposit/100),
+            'min_days': self.min_days,
+            'max_days': self.max_days,
         }
+        # 获取房屋图片url
+        image_urls = []
+        for image in self.images:
+            image_urls.append(constants.QINIU_URL_DOMAIN + image.url)
+        house_dict['image_urls'] = image_urls
+
+        # 设备信息
+        facilities = []
+        for facility in self.facilities:
+            facilities.append(facility.id)
+        house_dict['facilities'] = facilities
+
+        # 评论信息
+        # 订单完成，且评论不为空的最新20跳评论
+        comments = []
+        orders = Order.query.filter(Order.house_id == self.id,
+                                    Order.status == 'COMPLETE',
+                                    Order.comment != None).order_by(
+            Order.create_time.desc()).limit(constants.HOUSE_DETAIL_COMMENTS_DISPLAY_COUNT)
+        for order in orders:
+            comment = {
+                'user_name': order.user.name if order.user.name != order.user.mobile else '匿名用户',
+                'comment': order.comment,
+                'ctime': order.update_time.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            comments.append(comment)
+        house_dict['comments'] = comments
+
+        return house_dict
 
 
 class Facility(BaseModel, db.Model):

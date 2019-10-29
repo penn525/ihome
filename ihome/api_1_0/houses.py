@@ -346,6 +346,17 @@ def get_house_list():
         current_app.logger.error(e)
         page = 1
 
+    # 优先在redis数据库中查询
+    redis_key = f'houses_{start_date.date()}_{end_date.date()}_{area_id}_{sort_key}'
+    try:
+        resp = redis_store.hget(redis_key, page)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    if resp:
+        current_app.logger.info('hit houses list in redis')
+        return resp, 200, {'Content-Type': 'application/json'}
+
     # 3. 查询数据库
     # 过滤条件的参数列表容器
     filter_param = []
@@ -368,7 +379,6 @@ def get_house_list():
             confilct_orders = Order.query.filter(Order.start <= end_date).all()
     except Exception as e:
         current_app.logger.error(e)
-        pass
 
     confilct_house_ids = [order.house_id for order in confilct_orders]
     filter_param.append(House.id.notin_(confilct_house_ids))
@@ -400,4 +410,17 @@ def get_house_list():
     houses = [house.to_basic_dict() for house in page_obj.items]
     total_page = page_obj.pages
 
-    return jsonify(errno=RET.OK, errmsg='OK', data={'houses': houses, 'page': page, 'total_page': total_page})
+    resp_dict = dict(errno=RET.OK, errmsg='OK', data={
+        'houses': houses, 'page': page, 'total_page': total_page})
+    resp_json = json.dumps(resp_dict)
+
+    # 5. 添加到redis缓存
+    if page <= total_page:
+        try:
+            redis_store.hset(redis_key, page, resp_json)
+            redis_store.expire(
+                redis_key, constants.HOUSE_LIST_REDIS_CACHE_EXPIRES)
+        except Exception as e:
+            current_app.logger.error(e)
+
+    return resp_json, 200, {'Content-Type': 'application/json'}

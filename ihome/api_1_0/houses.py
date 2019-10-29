@@ -417,9 +417,12 @@ def get_house_list():
     # 5. 添加到redis缓存
     if page <= total_page:
         try:
-            redis_store.hset(redis_key, page, resp_json)
-            redis_store.expire(
+            pipeline = redis_store.pipeline()
+            pipeline.multi()
+            pipeline.hset(redis_key, page, resp_json)
+            pipeline.expire(
                 redis_key, constants.HOUSE_LIST_REDIS_CACHE_EXPIRES)
+            pipeline.execute()
         except Exception as e:
             current_app.logger.error(e)
 

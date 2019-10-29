@@ -1,11 +1,12 @@
 import json
+from datetime import datetime
 
 from flask import current_app, g, request, session
 from flask.json import jsonify
 
 from ihome import constants, db, redis_store
 from ihome.api_1_0 import api
-from ihome.models import Area, House, Facility, HouseImage
+from ihome.models import Area, House, Facility, HouseImage, Order
 from ihome.utils.common import login_required
 from ihome.utils.response_code import RET
 from ihome.utils.image_store import storage
@@ -305,3 +306,98 @@ def get_house_detail(house_id):
            {'Content-Type': 'application/json'}
 
     return resp
+
+
+# GET /api/v1.0/houses?sd=2019-09-10&ed=2019-09-12&aid=1&sk=new&p=1
+@api.route('/houses', methods=['GET'])
+def get_house_list():
+    """获取房屋列表信息，房屋搜索页面"""
+    # 1. 获取参数
+    start_date = request.args.get('sd')
+    end_date = request.args.get('ed')
+    area_id = request.args.get('aid')
+    sort_key = request.args.get('sk', 'new')
+    page = request.args.get('p')
+
+    # 2. 检查参数
+    # 检查时间
+    try:
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        if start_date and end_date:
+            assert start_date <= end_date
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg='日期参数错误')
+
+    # 检查区域id是否存在
+    try:
+        area = Area.query.get(area_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg='区域参数错误')
+
+    # 页面参数
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+
+    # 3. 查询数据库
+    # 过滤条件的参数列表容器
+    filter_param = []
+
+    # 填充过滤条件
+    # 区域
+    if area:
+        filter_param.append(House.area_id == area_id)
+
+    # 时间
+    confilct_orders = []
+    try:
+        if start_date and end_date:
+            confilct_orders = Order.query.filter(
+                Order.begin_date <= end_date,                                      Order.end_date >= start_date).all()
+        elif start_date:
+            confilct_orders = Order.query.filter(
+                Order.end_date >= start_date).all()
+        elif end_date:
+            confilct_orders = Order.query.filter(Order.start <= end_date).all()
+    except Exception as e:
+        current_app.logger.error(e)
+        pass
+
+    confilct_house_ids = [order.house_id for order in confilct_orders]
+    filter_param.append(House.id.notin_(confilct_house_ids))
+
+    # 排序
+    # 查询数据库
+    houses_query = House.query.filter(*filter_param)
+    if 'booking' == sort_key:
+        houses_query = houses_query.order_by(House.room_count.desc())
+    elif 'price-inc' == sort_key:
+        houses_query = houses_query.order_by(House.price.asc())
+    elif 'price-des' == sort_key:
+        houses_query = houses_query.order_by(House.price.desc())
+    else:
+        houses_query = houses_query.order_by(House.create_time.desc())
+
+    # 分页
+    try:
+        # 获取数据时才真正与数据库交互，前面都是构建查询条件
+        page_obj = houses_query.paginate(
+            page=page,
+            per_page=constants.HOUSE_LIST_PAGE_CAPACITY,
+            error_out=False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='数据库异常')
+
+    # 4. 组建返回数据
+    houses = [house.to_basic_dict() for house in page_obj.items]
+    total_page = page_obj.pages
+
+    return jsonify(errno=RET.OK, errmsg='OK', data={'houses': houses, 'page': page, 'total_page': total_page})

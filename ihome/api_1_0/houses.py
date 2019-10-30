@@ -313,9 +313,9 @@ def get_house_detail(house_id):
 def get_house_list():
     """获取房屋列表信息，房屋搜索页面"""
     # 1. 获取参数
-    start_date = request.args.get('sd')
-    end_date = request.args.get('ed')
-    area_id = request.args.get('aid')
+    start_date = request.args.get('sd', '')
+    end_date = request.args.get('ed', '')
+    area_id = request.args.get('aid', '')
     sort_key = request.args.get('sk', 'new')
     page = request.args.get('p')
 
@@ -323,9 +323,9 @@ def get_house_list():
     # 检查时间
     try:
         if start_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         if start_date and end_date:
             assert start_date <= end_date
     except Exception as e:
@@ -347,7 +347,8 @@ def get_house_list():
         page = 1
 
     # 优先在redis数据库中查询
-    redis_key = f'houses_{start_date.date()}_{end_date.date()}_{area_id}_{sort_key}'
+    redis_key = 'houses_%s_%s_%s_%s' % (
+        start_date, end_date, area_id, sort_key)
     try:
         resp = redis_store.hget(redis_key, page)
     except Exception as e:

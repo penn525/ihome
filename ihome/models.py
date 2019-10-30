@@ -103,11 +103,16 @@ class House(BaseModel, db.Model):
     def to_basic_dict(self):
         return {
             'id': self.id,
+            'user_avatar': constants.QINIU_URL_DOMAIN + self.user.avatar_url if self.user.avatar_url else "",
+            'area_name': self.area.name,
+            'address': self.address,
             'title': self.title,
-            'area': self.area.name,
+            'room_count': self.room_count,
+            'order_count': self.order_count,
             'price': '%.2f' % (self.price/100),
+            'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             'update_time': self.update_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'index_image_url': constants.QINIU_URL_DOMAIN + self.index_image_url
+            'index_image_url': constants.QINIU_URL_DOMAIN + self.index_image_url if self.index_image_url else ""
         }
 
     def to_full_dict(self):
@@ -115,6 +120,7 @@ class House(BaseModel, db.Model):
             'hid': self.id,
             'uid': self.user_id,
             'uname': self.user.name,
+            'user_avatar': constants.QINIU_URL_DOMAIN + self.user.avatar_url if self.user.avatar_url else "",
             'title': self.title,
             'price': '%.2f' % (self.price/100),
             'address': self.address,

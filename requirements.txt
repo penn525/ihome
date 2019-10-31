@@ -20,7 +20,6 @@ Flask-Script==2.0.6
 Flask-Session==0.3.1
 Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.2
--e git+https://penn525@github.com/penn525/flaskr-blog.git@0fee8de3743003a30e650ec3691ab82fb301d24a#egg=flaskr
 idna==2.8
 importlib-metadata==0.23
 ipython==7.8.0
@@ -39,7 +38,6 @@ pexpect==4.7.0
 pickleshare==0.7.5
 Pillow==6.2.0
 pluggy==0.13.0
-powerline-status===2.7.dev9999-git.b-5d82d544f3366a214732aeb8f781d50ced38ceef-
 prompt-toolkit==2.0.10
 ptyprocess==0.6.0
 py==1.8.0

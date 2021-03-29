@@ -44,7 +44,7 @@ py==1.8.0
 pyasn1==0.4.7
 pycrypto==2.6.1
 pycryptodomex==3.7.2
-Pygments==2.4.2
+Pygments==2.7.4
 pyparsing==2.4.2
 pytest==5.2.1
 python-alipay-sdk==1.10.1
